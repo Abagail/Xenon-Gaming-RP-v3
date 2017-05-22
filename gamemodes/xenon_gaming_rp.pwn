@@ -11,12 +11,19 @@ native WP_Hash(buffer[], len, const str[]);
 
 enum
 {
+	SpawnState: SpawnStateNone = 0,
+	SpawnState: SpawnStateSpawned = 1
+};
+
+enum
+{
 	PlayerDialogLogin = 0,
 	PlayerDialogRegister
 };
 
 enum p_PlayerData
 {
+	SpawnState: pSpawnState,
 	bool: pLoggedIn,
 	pLoginAttempts,
 	Cache: pLoginCache,
@@ -131,13 +138,9 @@ public OnPlayerRegisterSQL(playerid)
 	PlayerData[playerid][pLastSpawnWorld] = SpawnVW;
 	
 	PlayerData[playerid][pLoggedIn] = true;
-	SetSpawnInfo(playerid, NO_TEAM, PlayerData[playerid][pSkinID], PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ], PlayerData[playerid][pLastSpawnA], 0, 0, 0, 0, 0, 0);
 	SpawnPlayer(playerid);
-
-	SetPlayerInterior(playerid, PlayerData[playerid][pLastSpawnInt]);
-	SetPlayerVirtualWorld(playerid, PlayerData[playerid][pLastSpawnWorld]);
-	SendClientMessage(playerid, -1, "Logged in.");
 	
+	SendClientMessage(playerid, -1, "Logged in.");
 	return true;
 }
 
@@ -177,17 +180,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					
 					TogglePlayerSpectating(playerid, false);
 					PlayerData[playerid][pLoggedIn] = true;
-					
-					SetSpawnInfo(playerid, NO_TEAM, PlayerData[playerid][pSkinID], PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ], PlayerData[playerid][pLastSpawnA], 0, 0, 0, 0, 0, 0);
+
 					SpawnPlayer(playerid);
-					
-					SetPlayerInterior(playerid, PlayerData[playerid][pLastSpawnInt]);
-					SetPlayerVirtualWorld(playerid, PlayerData[playerid][pLastSpawnWorld]);
-					
-					SetPlayerScore(playerid, PlayerData[playerid][pLevel]);
-					GivePlayerMoney(playerid, PlayerData[playerid][pMoney]);
-					SendClientMessage(playerid, -1, "Logged in.");
 					cache_delete(PlayerData[playerid][pLoginCache]);
+					
+					SendClientMessage(playerid, -1, (PlayerData[playerid][pAdmin]) ? ("Logged in as an admin.") : ("Logged in"));
 				}
 
 				else return Kick(playerid);
@@ -254,6 +251,9 @@ public OnGameModeExit()
 
 public OnPlayerConnect(playerid)
 {
+    SetSpawnInfo(playerid, NO_TEAM, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0);
+    PlayerData[playerid][pSpawnState] = SpawnState: SpawnStateNone;
+
 	PlayerData[playerid][pLoggedIn] = false;
 	TogglePlayerSpectating(playerid, true);
 	
@@ -276,5 +276,19 @@ public OnPlayerSpawn(playerid)
 	TogglePlayerSpectating(playerid, false);
 	SetPlayerSkin(playerid, PlayerData[playerid][pSkinID]);
 	SetPlayerScore(playerid, PlayerData[playerid][pLevel]);
+	
+	ResetPlayerMoney(playerid);
+	GivePlayerMoney(playerid, PlayerData[playerid][pMoney]);
+	
+	if(PlayerData[playerid][pSpawnState] == SpawnState: SpawnStateNone)
+	{
+	    SetPlayerPos(playerid, PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ]);
+	    SetPlayerFacingAngle(playerid, PlayerData[playerid][pLastSpawnA]);
+		SetPlayerVirtualWorld(playerid, PlayerData[playerid][pLastSpawnWorld]);
+		SetPlayerInterior(playerid, PlayerData[playerid][pLastSpawnInt]);
+		
+		PlayerData[playerid][pSpawnState] = SpawnState: SpawnStateSpawned;
+	}
+	
 	return true;
 }

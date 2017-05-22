@@ -118,6 +118,7 @@ public OnPlayerRegisterSQL(playerid)
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
     if(strcmp(inputtext, "\\", true) == 0) return true;
+    
     switch(dialogid)
     {
         case PlayerDialogLogin:
@@ -128,34 +129,32 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             WP_Hash(inputtext, 129, inputtext);
             if(!isnull(inputtext) && strcmp(inputtext, PlayerData[playerid][pPassword], false) == 0)
             {
-                if(cache_is_valid(PlayerData[playerid][pLoginCache], gSQLConnection))
-                {
-                    cache_set_active(PlayerData[playerid][pLoginCache]);
-                    PlayerData[playerid][pLevel] = cache_get_field_content_int(0, "AccountLevel");
-                    PlayerData[playerid][pAdmin] = cache_get_field_content_int(0, "AccountAdmin");
-                    PlayerData[playerid][pMoney] = cache_get_field_content_int(0, "AccountMoney");
-                    PlayerData[playerid][pKills] = cache_get_field_content_int(0, "AccountKills");
-                    PlayerData[playerid][pDeaths] = cache_get_field_content_int(0, "AccountDeaths");
-                    PlayerData[playerid][pSkinID] = cache_get_field_content_int(0, "AccountSkin");
-                    PlayerData[playerid][pLastSpawnX] = cache_get_field_content_float(0, "AccountSpawnX");
-                    PlayerData[playerid][pLastSpawnY] = cache_get_field_content_float(0, "AccountSpawnY");
-                    PlayerData[playerid][pLastSpawnZ] = cache_get_field_content_float(0, "AccountSpawnZ");
-                    PlayerData[playerid][pLastSpawnA] = cache_get_field_content_float(0, "AccountSpawnA");
-                    PlayerData[playerid][pLastSpawnInt] = cache_get_field_content_int(0, "AccountSpawnInt");
-                    PlayerData[playerid][pLastSpawnWorld] = cache_get_field_content_int(0, "AccountSpawnWorld");
-                    TogglePlayerSpectating(playerid, false);
-                    PlayerData[playerid][pLoggedIn] = true;
+                if(!cache_is_valid(PlayerData[playerid][pLoginCache], gSQLConnection)) return Kick(playerid);
+		
+                cache_set_active(PlayerData[playerid][pLoginCache]);
+                PlayerData[playerid][pLevel] = cache_get_field_content_int(0, "AccountLevel");
+                PlayerData[playerid][pAdmin] = cache_get_field_content_int(0, "AccountAdmin");
+                PlayerData[playerid][pMoney] = cache_get_field_content_int(0, "AccountMoney");
+                PlayerData[playerid][pKills] = cache_get_field_content_int(0, "AccountKills");
+                PlayerData[playerid][pDeaths] = cache_get_field_content_int(0, "AccountDeaths");
+                PlayerData[playerid][pSkinID] = cache_get_field_content_int(0, "AccountSkin");
+                PlayerData[playerid][pLastSpawnX] = cache_get_field_content_float(0, "AccountSpawnX");
+                PlayerData[playerid][pLastSpawnY] = cache_get_field_content_float(0, "AccountSpawnY");
+                PlayerData[playerid][pLastSpawnZ] = cache_get_field_content_float(0, "AccountSpawnZ");
+                PlayerData[playerid][pLastSpawnA] = cache_get_field_content_float(0, "AccountSpawnA");
+                PlayerData[playerid][pLastSpawnInt] = cache_get_field_content_int(0, "AccountSpawnInt");
+                PlayerData[playerid][pLastSpawnWorld] = cache_get_field_content_int(0, "AccountSpawnWorld");
+                TogglePlayerSpectating(playerid, false);
+                PlayerData[playerid][pLoggedIn] = true;
 		    
-                    SetSpawnInfo(playerid, NO_TEAM, PlayerData[playerid][pSkinID], PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ], PlayerData[playerid][pLastSpawnA], 0, 0, 0, 0, 0, 0);
-                    SpawnPlayer(playerid);
-                    SetPlayerInterior(playerid, PlayerData[playerid][pLastSpawnInt]);
-                    SetPlayerVirtualWorld(playerid, PlayerData[playerid][pLastSpawnWorld]);
-                    SetPlayerScore(playerid, PlayerData[playerid][pLevel]);
-                    GivePlayerMoney(playerid, PlayerData[playerid][pMoney]);
-                    SendClientMessage(playerid, -1, "Logged in.");
-                    cache_delete(PlayerData[playerid][pLoginCache]);
-                }
-                else return Kick(playerid);
+                SetSpawnInfo(playerid, NO_TEAM, PlayerData[playerid][pSkinID], PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ], PlayerData[playerid][pLastSpawnA], 0, 0, 0, 0, 0, 0);
+                SpawnPlayer(playerid);
+                SetPlayerInterior(playerid, PlayerData[playerid][pLastSpawnInt]);
+                SetPlayerVirtualWorld(playerid, PlayerData[playerid][pLastSpawnWorld]);
+                SetPlayerScore(playerid, PlayerData[playerid][pLevel]);
+                GivePlayerMoney(playerid, PlayerData[playerid][pMoney]);
+                SendClientMessage(playerid, -1, "Logged in.");
+                cache_delete(PlayerData[playerid][pLoginCache]);
             }
             else
             {
@@ -218,6 +217,7 @@ public OnPlayerConnect(playerid)
 public OnPlayerSpawn(playerid)
 {
     if(PlayerData[playerid][pLoggedIn] == false) return Kick(playerid);
+    
     TogglePlayerSpectating(playerid, false);
     SetPlayerSkin(playerid, PlayerData[playerid][pSkinID]);
     SetPlayerScore(playerid, PlayerData[playerid][pLevel]);

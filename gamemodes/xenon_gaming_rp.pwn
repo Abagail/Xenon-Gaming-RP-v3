@@ -130,7 +130,6 @@ public OnPlayerRegisterSQL(playerid)
 	PlayerData[playerid][pLastSpawnInt] = SpawnInterior;
 	PlayerData[playerid][pLastSpawnWorld] = SpawnVW;
 	
-	TogglePlayerSpectating(playerid, false);
 	PlayerData[playerid][pLoggedIn] = true;
 	SetSpawnInfo(playerid, NO_TEAM, PlayerData[playerid][pSkinID], PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ], PlayerData[playerid][pLastSpawnA], 0, 0, 0, 0, 0, 0);
 	SpawnPlayer(playerid);
@@ -238,7 +237,19 @@ public OnGameModeInit()
 	
 	ManualVehicleEngineAndLights();
 	LoadServerSettings();
-	return 1;
+	return true;
+}
+
+public OnGameModeExit()
+{
+	for(new i; i <= GetPlayerPoolSize(); i++)
+	{
+	    if(IsPlayerConnected(i) && cache_is_valid(PlayerData[i][pLoginCache]))
+			cache_delete(PlayerData[i][pLoginCache]);
+	}
+	
+	mysql_close(gSQLConnection);
+	return true;
 }
 
 public OnPlayerConnect(playerid)

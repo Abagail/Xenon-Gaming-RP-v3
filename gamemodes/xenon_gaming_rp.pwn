@@ -49,19 +49,22 @@ enum p_PlayerData
 	pLastSpawnInt,
 	pLastSpawnWorld,
 	
-	bool: pIsFrozen
+	bool: pIsFrozen,
+	pCurrentWorld,
+	pCurrentInterior
 }
 
 new PlayerData[MAX_PLAYERS][p_PlayerData];
 
 new
-	Float: SpawnX,
-	Float: SpawnY,
-	Float: SpawnZ,
-	Float: SpawnA,
-	SpawnInterior,
-	SpawnVW,
+	Float: gSpawnX,
+	Float: gSpawnY,
+	Float: gSpawnZ,
+	Float: gSpawnA,
+	gSpawnInterior,
+	gSpawnVW;
 	
+static
 	gSQLConnection;
 
 main() {}
@@ -81,12 +84,12 @@ public OnLoadServerSettings()
 		
 	else
 	{
-		SpawnX = cache_get_field_content_float(0, "SpawnX");
-		SpawnY = cache_get_field_content_float(0, "SpawnY");
-		SpawnZ = cache_get_field_content_float(0, "SpawnZ");
-		SpawnA = cache_get_field_content_float(0, "SpawnA");
-		SpawnInterior = cache_get_field_content_int(0, "SpawnInterior");
-		SpawnVW = cache_get_field_content_int(0, "SpawnVW");
+		gSpawnX = cache_get_field_content_float(0, "SpawnX");
+		gSpawnY = cache_get_field_content_float(0, "SpawnY");
+		gSpawnZ = cache_get_field_content_float(0, "SpawnZ");
+		gSpawnA = cache_get_field_content_float(0, "SpawnA");
+		gSpawnInterior = cache_get_field_content_int(0, "SpawnInterior");
+		gSpawnVW = cache_get_field_content_int(0, "SpawnVW");
 		
 		new tempText[64];
 		cache_get_field_content(0, "ModeName", tempText, sizeof tempText);
@@ -131,11 +134,11 @@ public OnPlayerRegisterSQL(playerid)
 	PlayerData[playerid][pDeaths] = 0;
 	PlayerData[playerid][pSkinID] = 299;
 	
-	PlayerData[playerid][pLastSpawnX] = SpawnX;
-	PlayerData[playerid][pLastSpawnY] = SpawnY;
-	PlayerData[playerid][pLastSpawnZ] = SpawnZ;
-	PlayerData[playerid][pLastSpawnInt] = SpawnInterior;
-	PlayerData[playerid][pLastSpawnWorld] = SpawnVW;
+	PlayerData[playerid][pLastSpawnX] = gSpawnX;
+	PlayerData[playerid][pLastSpawnY] = gSpawnY;
+	PlayerData[playerid][pLastSpawnZ] = gSpawnZ;
+	PlayerData[playerid][pLastSpawnInt] = gSpawnInterior;
+	PlayerData[playerid][pLastSpawnWorld] = gSpawnVW;
 	
 	PlayerData[playerid][pLoggedIn] = true;
 	SpawnPlayer(playerid);
@@ -211,7 +214,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			WP_Hash(PlayerData[playerid][pPassword], 129, inputtext);
 			
 			new local_query[500];
-			mysql_format(gSQLConnection, local_query, sizeof local_query, "INSERT INTO users (AccountName, AccountPassword, AccountIP, AccountSpawnX, AccountSpawnY, AccountSpawnZ, AccountSpawnA, AccountSpawnInt, AccountSpawnWorld) VALUES ('%e', '%e', '%e', %f, %f, %f, %f, %i, %i)", PlayerData[playerid][pPlayerName], PlayerData[playerid][pPassword], PlayerData[playerid][pPlayerIP], SpawnX, SpawnY, SpawnZ, SpawnA, SpawnInterior, SpawnVW);
+			mysql_format(gSQLConnection, local_query, sizeof local_query, "INSERT INTO users (AccountName, AccountPassword, AccountIP, AccountSpawnX, AccountSpawnY, AccountSpawnZ, AccountSpawnA, AccountSpawnInt, AccountSpawnWorld) VALUES ('%e', '%e', '%e', %f, %f, %f, %f, %i, %i)", PlayerData[playerid][pPlayerName], PlayerData[playerid][pPassword], PlayerData[playerid][pPlayerIP], gSpawnX, gSpawnY, gSpawnZ, gSpawnA, gSpawnInterior, gSpawnVW);
 			mysql_tquery(gSQLConnection, local_query, "OnPlayerRegisterSQL", "i", playerid);
 		}
 	}
@@ -264,6 +267,17 @@ public OnPlayerConnect(playerid)
 	// mysql_format(gSQLConnection, local_query, sizeof local_query, "SELECT AccountID, AccountPassword, AccountDisabled, AccountBanned, * FROM users WHERE AccountName = '%e'", PlayerData[playerid][pPlayerName]);
 	mysql_format(gSQLConnection, local_query, sizeof local_query, "SELECT * FROM users WHERE AccountName = '%e'", PlayerData[playerid][pPlayerName]);
 	mysql_tquery(gSQLConnection, local_query, "OnPlayerConnectSQL", "i", playerid);
+	
+	return true;
+}
+
+public OnPlayerDisconnect(playerid, reason)
+{
+	if(PlayerData[playerid][pLoggedIn] == false)
+	{
+	    if(cache_is_valid(PlayerData[playerid][pLoginCache]))
+	        cache_delete(PlayerData[playerid][pLoginCache]);
+	}
 	
 	return true;
 }

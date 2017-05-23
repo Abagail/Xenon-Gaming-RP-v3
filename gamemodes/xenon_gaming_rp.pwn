@@ -62,7 +62,9 @@ new
 	Float: gSpawnZ,
 	Float: gSpawnA,
 	gSpawnInterior,
-	gSpawnVW;
+	gSpawnVW,
+
+	gServerMOTD[80];
 	
 static
 	gSQLConnection;
@@ -72,7 +74,7 @@ main() {}
 // SQL Functions //
 LoadServerSettings()
 {
-	mysql_tquery(gSQLConnection, "SELECT SpawnX, SpawnY, SpawnZ, SpawnA, SpawnInterior, SpawnVW, ModeName FROM settings", "OnLoadServerSettings", "");
+	mysql_tquery(gSQLConnection, "SELECT SpawnX, SpawnY, SpawnZ, SpawnA, SpawnInterior, SpawnVW, ModeName, ServerMOTD FROM settings", "OnLoadServerSettings", "");
 	return true;
 }
 
@@ -93,6 +95,11 @@ public OnLoadServerSettings()
 		
 		new tempText[64];
 		cache_get_field_content(0, "ModeName", tempText, sizeof tempText);
+		cache_get_field_content(0, "ServerMOTD", gServerMOTD, sizeof gServerMOTD);
+		
+		if(strlen(gServerMOTD))
+			strins(gServerMOTD, "Message of the day: ", 0);
+			
 		SetGameModeText(tempText);
 	}
 	
@@ -144,6 +151,10 @@ public OnPlayerRegisterSQL(playerid)
 	SpawnPlayer(playerid);
 	
 	SendClientMessage(playerid, -1, "Logged in.");
+	
+	if(!isnull(gServerMOTD))
+		SendClientMessage(playerid, -1, gServerMOTD);
+		
 	return true;
 }
 
@@ -188,6 +199,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					cache_delete(PlayerData[playerid][pLoginCache]);
 					
 					SendClientMessage(playerid, -1, (PlayerData[playerid][pAdmin]) ? ("Logged in as an admin.") : ("Logged in"));
+
+					if(!isnull(gServerMOTD))
+						SendClientMessage(playerid, -1, gServerMOTD);
 				}
 
 				else return Kick(playerid);

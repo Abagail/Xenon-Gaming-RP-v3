@@ -1,11 +1,12 @@
 #include <a_samp>
 #include <a_mysql>
 #include <zcmd>
+#include <strlib>
 
 #define mysql_host 			 	"localhost"
-#define mysql_username			"root"
-#define mysql_password          "password"
-#define mysql_database          "xenon_gaming_rp"
+#define mysql_username			        "root"
+#define mysql_password                          "password"
+#define mysql_database                          "xenon_gaming_rp"
 
 native WP_Hash(buffer[], len, const str[]);
 
@@ -71,6 +72,32 @@ static
 
 main() {}
 
+// Misc Functions //
+SendLocalClientMessageP(playerid, color, message[], Float: range)
+{
+	if(!IsPlayerConnected(playerid))
+	    return -1;
+	    
+	new
+	    local_count = -1;
+	    
+	GetPlayerPos(playerid, PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ]);
+	for(new i; i <= GetPlayerPoolSize(); i++)
+	{
+	    if(!IsPlayerConnected(i) || PlayerData[i][pSpawnState] == SpawnState: SpawnStateNone || PlayerData[i][pCurrentWorld] != PlayerData[playerid][pCurrentWorld])
+	        continue;
+	        
+		if(GetPlayerDistanceFromPoint(i, PlayerData[playerid][pLastSpawnX], PlayerData[playerid][pLastSpawnY], PlayerData[playerid][pLastSpawnZ]) <= range)
+		{
+			SendClientMessage(i, color, message);
+			local_count ++;
+		}
+	}
+	
+	return local_count;
+}
+
+// End of Misc Functions
 // SQL Functions //
 LoadServerSettings()
 {
@@ -320,3 +347,29 @@ public OnPlayerSpawn(playerid)
 	
 	return true;
 }
+
+public OnPlayerText(playerid, text[])
+{
+	new
+	    local_message[128];
+	    
+	format(local_message, sizeof local_message, "%s says: %s", str_replace("_", " ", PlayerData[playerid][pPlayerName]), text);
+	SendLocalClientMessageP(playerid, -1, local_message, 10.0);
+	
+	if(!IsPlayerInAnyVehicle(playerid))
+        ApplyAnimation(playerid, "PED", "IDLE_CHAT", 4.0, 1, 0, 0, 1, 1),
+        SetTimerEx("ClearPlayerAnimations", 1500, false, "i", playerid);
+	
+	return false;
+}
+
+// Start of Timer Functions //
+forward ClearPlayerAnimations(playerid);
+public ClearPlayerAnimations(playerid)
+{
+	ClearAnimations(playerid);
+ 	ApplyAnimation(playerid, "CARRY", "crry_prtial", 1.0, 0, 0, 0, 0, 0);
+ 	
+ 	return true;
+}
+// End of Timer Functions

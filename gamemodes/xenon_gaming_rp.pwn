@@ -323,6 +323,12 @@ public OnPlayerDisconnect(playerid, reason)
 	return true;
 }
 
+public OnPlayerDeath(playerid, killerid, reason)
+{
+     SpawnPlayer(playerid);
+     return true;
+}
+
 public OnPlayerSpawn(playerid)
 {
 	if(PlayerData[playerid][pLoggedIn] == false)

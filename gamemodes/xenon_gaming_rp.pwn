@@ -295,6 +295,21 @@ public OnGameModeExit()
 
 public OnPlayerConnect(playerid)
 {
+	if(IsPlayerNPC(playerid))
+	{
+	    GetPlayerName(playerid, PlayerData[playerid][pPlayerName], MAX_PLAYER_NAME);
+	    GetPlayerIp(playerid, PlayerData[playerid][pPlayerIP], 32);
+	    
+	    if(strcmp(PlayerData[playerid][pPlayerIP], "127.0.0.1", true) != 0)
+	    {
+	        printf("[Server]: External NPC kicked (ID: %d, Name: %s, IP: %s).", playerid, PlayerData[playerid][pPlayerName], PlayerData[playerid][pPlayerIP]);
+	        return Kick(playerid);
+	    }
+		
+	    SetSpawnInfo(playerid, NO_TEAM, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0);
+	    return true;
+	}
+		
     SetSpawnInfo(playerid, NO_TEAM, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0);
     PlayerData[playerid][pSpawnState] = SpawnState: SpawnStateNone;
 

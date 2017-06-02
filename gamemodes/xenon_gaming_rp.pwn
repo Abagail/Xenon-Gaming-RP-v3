@@ -304,10 +304,10 @@ public OnPlayerConnect(playerid)
 	    {
 	        printf("[Server]: External NPC kicked (ID: %d, Name: %s, IP: %s).", playerid, PlayerData[playerid][pPlayerName], PlayerData[playerid][pPlayerIP]);
 	        return Kick(playerid);
-	    }
+            }
 		
 	    SetSpawnInfo(playerid, NO_TEAM, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0);
-	    return true;
+	    /return true;
 	}
 		
     SetSpawnInfo(playerid, NO_TEAM, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0);
@@ -371,6 +371,9 @@ public OnPlayerSpawn(playerid)
 
 public OnPlayerText(playerid, text[])
 {
+	if(PlayerData[playerid][pLoggedIn] == false || PlayerData[playerid][pSpawnState] == SpawnState: SpawnStateNone)
+	    return false;
+	    
 	new
 	    local_message[128];
 	    

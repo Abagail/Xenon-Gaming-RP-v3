@@ -307,7 +307,7 @@ public OnPlayerConnect(playerid)
             }
 		
 	    SetSpawnInfo(playerid, NO_TEAM, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0);
-	    /return true;
+	    return true;
 	}
 		
     SetSpawnInfo(playerid, NO_TEAM, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0);
